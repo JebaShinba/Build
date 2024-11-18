@@ -1,12 +1,9 @@
-name: CI/CD Pipeline for Docker Image
+name: Build, Test, and Push Docker Image
 
 on:
   push:
     branches:
-      - main  # Trigger pipeline on changes to the `main` branch
-  pull_request:
-    branches:
-      - main  # Trigger pipeline on pull requests targeting `main`
+      - main
 
 jobs:
   build:
@@ -29,63 +26,35 @@ jobs:
       - name: Check Docker version
         run: docker --version
 
-      # Step 4: Build Docker image
+      # Build Docker image
       - name: Build Docker image
         uses: docker/build-push-action@v3
         with:
-          context: .  # Docker build context (the root of the repo)
-          push: false  # Set to `true` for production
-          tags: ghcr.io/${{ github.repository }}:latest
+          context: .
+          push: true
+          tags: ghcr.io/jebashinba/my-image:latest
 
-      # Step 5: Run the container with the built image and run tests
+      # Step 5: Run the container with the built image and execute tests
       - name: Run Docker container and execute tests
         run: |
-          # Start the container in detached mode
-          docker run -d --name my-container-name ghcr.io/${{ github.repository }}:latest
+          # Run Docker container in detached mode
+          docker run -d --name my-container-name ghcr.io/jebashinba/my-image:latest
 
-          # Run tests inside the container
-          docker exec -t my-container-name python -m unittest discover -s tests/
+          # Wait a few seconds for the container to start (optional, depending on your app)
+          sleep 5
 
-          # Optionally, view logs to check test results
-          docker logs my-container-name
+          # Run Selenium tests using docker exec or a testing framework
+          docker exec -t my-container-name python -m unittest discover -s tests/  # Running Python tests inside the container
 
-          # Shut down and remove the container
-          docker rm -f my-container-name
+          # Optionally, wait for tests to finish or log the output
+          docker logs my-container-name  # This shows logs to check test results
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build  # Ensure the build job has passed before deployment
+          # Shut down the container after the tests are done (ensures proper cleanup)
+          docker stop my-container-name && docker rm -f my-container-name  # Stop and remove the container
 
-    steps:
-      # Step 1: Checkout the code from the repository
-      - name: Check out code
-        uses: actions/checkout@v2
 
-      # Step 2: Log in to GitHub Container Registry
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 3: Build Docker image (again, this can be skipped if already built)
-      - name: Build Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .  # Docker build context (the root of the repo)
-          push: true  # Push the image to the container registry
-          tags: ghcr.io/${{ github.repository }}:latest
-
-      # Step 4: Deploy to a container (for example, start it on a server)
-      - name: Deploy Docker container
-        run: |
-          # Example: Start the container on a remote server (using SSH or Docker API)
-          ssh -o StrictHostKeyChecking=no user@your-server-ip "docker pull ghcr.io/${{ github.repository }}:latest && docker run -d --name my-container-name ghcr.io/${{ github.repository }}:latest"
-          
-          # Or deploy via Kubernetes, ECS, or other container services
-          # Example: Using Kubernetes `kubectl`
-          # kubectl set image deployment/my-deployment my-container-name=ghcr.io/${{ github.repository }}:latest
+  
 
 
 
