@@ -1,17 +1,30 @@
-# Use an official Python runtime as the base image
-FROM python:3.9-slim
+# Use the latest official Debian image as the base
+FROM debian:bullseye-slim
 
-# Install required packages for Selenium, Chrome, and ChromeDriver
+# Install required dependencies
 RUN apt-get update && \
-    apt-get install -y curl gnupg unzip libnss3 libgconf-2-4 && \
+    apt-get install -y \
+    curl \
+    gnupg2 \
+    lsb-release \
+    apt-transport-https \
+    unzip \
+    libnss3 \
+    libgconf-2-4 \
+    python3 \
+    python3-pip \
+    python3-setuptools && \
     rm -rf /var/lib/apt/lists/*
 
 # Add the Google Chrome APT repository and install Chrome
-RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-keyring.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-keyring.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && \
     apt-get install -y google-chrome-stable && \
     rm -rf /var/lib/apt/lists/*
+
+# Check Chrome installation
+RUN google-chrome-stable --version
 
 # Install ChromeDriver
 RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
@@ -34,6 +47,4 @@ RUN pip install -r requirements.txt
 COPY . /app
 
 # Run the test suite using unittest when the container starts
-CMD ["python", "-m", "unittest", "discover", "-s", "."]
-
-
+CMD ["python3", "-m", "unittest", "discover", "-s", "."]
