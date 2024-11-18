@@ -12,13 +12,12 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest  # This job runs on Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Optional: Step to generate the zip file
       - name: Generate zip file
         run: |
           mkdir -p output
@@ -56,64 +55,51 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./filename.zip  # Ensure this path is correct
+          asset_path: ./filename.zip
           asset_name: filename.zip
           asset_content_type: application/zip
 
-      # Upload the artifact for future download
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: my-artifact
-          path: ./filename.zip  # Ensure this is the correct path to the file you want to upload
-
-      - name: List files in the current directory
-        run: ls -l
+          path: ./filename.zip
 
   download:
     runs-on: ubuntu-latest
-    needs: release  # Ensure this job runs only after the release job is finished
+    needs: release
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v3
         with:
           name: my-artifact
-          path: ./downloaded_files  # Specify the local directory to save the file
+          path: ./downloaded_files
 
       - name: List files in the downloaded directory
         run: ls -l ./downloaded_files
 
   download_release:
-    runs-on: windows-latest  # This job runs on Windows
-
-    
-
+    runs-on: windows-latest
     steps:
       - name: Download Release Asset Using PowerShell
         run: |
-          # Define variables
           $versionTag = "v2024.11.12-043105"
           $repo = "JebaShinba/Build"
-          $downloadPath = "C:\\Users\\jebas\\Build\\downloaded_filename.zip"  # Set the path where the file will be saved
-          $downloadDir = [System.IO.Path]::GetDirectoryName($downloadPath)  # Extract the directory path
+          $downloadPath = "C:\\Users\\jebas\\Build\\downloaded_filename.zip"
+          $downloadDir = [System.IO.Path]::GetDirectoryName($downloadPath)
 
-          # Ensure the directory exists
           if (!(Test-Path -Path $downloadDir)) {
               New-Item -ItemType Directory -Path $downloadDir | Out-Null
           }
 
-          # Fetch the release data for the specified tag
           $response = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$versionTag" -UseBasicParsing
-
-          # Extract the download URL for the asset named 'filename.zip'
           $downloadUrl = ($response.assets | Where-Object { $_.name -eq "filename.zip" }).browser_download_url
 
-          # Check if the URL was found, then download the asset
           if ($downloadUrl) {
               Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
               Write-Output "Downloaded file saved as $downloadPath."
           } else {
-              Write-Output "No asset named 'filename.zip' was found in the release."
+              Write-Output "No asset named 'filename.zip' was found."
           }
 
       - name: Upload downloaded file as artifact
