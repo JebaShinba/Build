@@ -1,59 +1,123 @@
-name: Build, Test, and Push Docker Image
+name: Auto Release on Push to Main
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  release:
+    runs-on: ubuntu-latest  # This job runs on Ubuntu
 
     steps:
-      # Step 1: Check out the code
-      - name: Check out code
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Step 2: Log in to GitHub Container Registry (GHCR)
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # Step 3: Check Docker version (Optional, for debugging)
-      - name: Check Docker version
-        run: docker --version
-
-      # Step 4: Build Docker image
-      - name: Build Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: . # Context is the root of the repository
-          push: true
-          tags: ghcr.io/jebashinba/my-image:latest
-
-      # Step 5: Set up Python environment (since you are using Selenium with Python)
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-
-      # Step 6: Install dependencies from requirements.txt
-      - name: Install dependencies
+      # Optional: Step to generate the zip file
+      - name: Generate zip file
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          mkdir -p output
+          echo "Sample content" > output/sample.txt
+          zip -r filename.zip output/
 
-      # Step 7: Build Docker image again with dependencies
-      - name: Build Docker image with Selenium dependencies
+      - name: Generate Version Tag
+        id: generate_tag
         run: |
-          docker build -t my-selenium-image .
+          VERSION="v$(date +'%Y.%m.%d-%H%M%S')"
+          echo "version=$VERSION" >> $GITHUB_ENV
 
-      # Step 8: Run Selenium tests in the Docker container
-      - name: Run Selenium tests
+      - name: Create Git Tag
         run: |
-          docker run --rm my-selenium-image bash -c "python3 -m unittest discover -s tests"
-        # This assumes your tests are in a `tests/` folder, adjust as needed.
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ env.version }}
+          git push origin ${{ env.version }}
 
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.version }}
+          release_name: "Release ${{ env.version }}"
+          body: "Automatic release for version ${{ env.version }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./filename.zip  # Ensure this path is correct
+          asset_name: filename.zip
+          asset_content_type: application/zip
+
+      # Upload the artifact for future download
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ./filename.zip  # Ensure this is the correct path to the file you want to upload
+
+      - name: List files in the current directory
+        run: ls -l
+
+  download:
+    runs-on: ubuntu-latest
+    needs: release  # Ensure this job runs only after the release job is finished
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: my-artifact
+          path: ./downloaded_files  # Specify the local directory to save the file
+
+      - name: List files in the downloaded directory
+        run: ls -l ./downloaded_files
+
+  download_release:
+    runs-on: windows-latest  # This job runs on Windows
+
+    
+
+    steps:
+      - name: Download Release Asset Using PowerShell
+        run: |
+          # Define variables
+          $versionTag = "v2024.11.12-043105"
+          $repo = "JebaShinba/Build"
+          $downloadPath = "C:\\Users\\jebas\\Build\\downloaded_filename.zip"  # Set the path where the file will be saved
+          $downloadDir = [System.IO.Path]::GetDirectoryName($downloadPath)  # Extract the directory path
+
+          # Ensure the directory exists
+          if (!(Test-Path -Path $downloadDir)) {
+              New-Item -ItemType Directory -Path $downloadDir | Out-Null
+          }
+
+          # Fetch the release data for the specified tag
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$versionTag" -UseBasicParsing
+
+          # Extract the download URL for the asset named 'filename.zip'
+          $downloadUrl = ($response.assets | Where-Object { $_.name -eq "filename.zip" }).browser_download_url
+
+          # Check if the URL was found, then download the asset
+          if ($downloadUrl) {
+              Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
+              Write-Output "Downloaded file saved as $downloadPath."
+          } else {
+              Write-Output "No asset named 'filename.zip' was found in the release."
+          }
+
+      - name: Upload downloaded file as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: downloaded_filename.zip
+          path: C:\Users\jebas\Build\downloaded_filename.zip
