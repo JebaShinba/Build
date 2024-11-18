@@ -3,12 +3,24 @@ FROM python:3.9-slim
 
 # Install required packages for Selenium, Chrome, and ChromeDriver
 RUN apt-get update && \
-    apt-get install -y curl gnupg unzip libnss3 libgconf-2-4 && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y \
+    curl \
+    gnupg \
+    unzip \
+    libnss3 \
+    libgconf-2-4 \
+    libatk-bridge2.0-0 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Add the Google Chrome APT repository and install Chrome
-RUN curl -fsSL https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-keyring.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-keyring.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && \
     apt-get install -y google-chrome-stable && \
     rm -rf /var/lib/apt/lists/*
@@ -28,12 +40,13 @@ WORKDIR /app
 
 # Copy Python dependencies and install them
 COPY requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the test code
 COPY . /app
 
 # Run the test suite using unittest when the container starts
 CMD ["python", "-m", "unittest", "discover", "-s", "."]
+
 
 
