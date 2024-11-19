@@ -75,7 +75,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: my-artifact
-          path: ./downloaded_files  # Specify the local directory to save the file
+          path: ./downloaded_files  
 
       - name: List files in the downloaded directory
         run: ls -l ./downloaded_files
