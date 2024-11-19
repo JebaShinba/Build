@@ -1,0 +1,37 @@
+name: Download Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to download"
+        required: true
+        default: "v2024.11.18-093216"  # Default tag
+
+jobs:
+  download:
+    runs-on: ubuntu-latest  # Running on Ubuntu
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Install GitHub CLI
+      run: |
+        sudo apt update
+        sudo apt install gh -y
+
+    - name: Authenticate GitHub CLI
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+    - name: Download Release
+      run: |
+        # Create a directory for the release if it doesn't exist
+        mkdir -p /home/runner/Downloads
+
+        # Download the release to the directory
+        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --dir /home/runner/Downloads
+
+        # List the files to verify the download
+        ls -l /home/runner/Downloads
