@@ -3,37 +3,29 @@
 # Repository details
 REPO_OWNER="JebaShinba"
 REPO_NAME="Build"
-TAG="latest"  # Use "latest" for the latest release, or specify a tag like "v1.0.0"
 TOKEN=""      # Optional: Add your GitHub token if accessing private repositories
+DOWNLOAD_DIR="$HOME/Build"  # Use Unix-style path (e.g., /home/username/Build)
 
-# Determine the download directory based on the operating system
-if [[ "$(uname)" == "Linux" || "$(uname)" == "Darwin" ]]; then
-  # Unix-based systems (Linux/macOS)
-  DOWNLOAD_DIR="$HOME/Build"
-else
-  # Windows (Git Bash, etc.)
-  DOWNLOAD_DIR="C:/Users/jebas/Build"
-fi
-
-# Ensure the download directory
+# Ensure the download directory exists
 mkdir -p "$DOWNLOAD_DIR"
 
-# Fetch the release information from GitHub
+# Fetch the latest release information
+API_URL="https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest"
 if [[ -n "$TOKEN" ]]; then
-  AUTH_HEADER="Authorization: token $TOKEN"
+  RELEASE_INFO=$(curl -sH "Authorization: token $TOKEN" "$API_URL")
 else
-  AUTH_HEADER=""
+  RELEASE_INFO=$(curl -s "$API_URL")
 fi
 
-API_URL="https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/$TAG"
-RELEASE_INFO=$(curl -sH "$AUTH_HEADER" "$API_URL")
+# Debugging: Print release info
+echo "Release Information: $RELEASE_INFO"
 
 # Parse the release asset download URLs
 ASSET_URLS=$(echo "$RELEASE_INFO" | grep browser_download_url | cut -d '"' -f 4)
 
 # Check if any assets were found
 if [[ -z "$ASSET_URLS" ]]; then
-  echo "No assets found for the release $TAG."
+  echo "No assets found for the latest release."
   exit 1
 fi
 
@@ -41,18 +33,7 @@ fi
 for ASSET_URL in $ASSET_URLS; do
   echo "Downloading $ASSET_URL..."
   FILENAME=$(basename "$ASSET_URL")
-
-  if [[ "$(uname)" == "Linux" || "$(uname)" == "Darwin" ]]; then
-    # Unix-based systems
-    OUTPUT_PATH="$DOWNLOAD_DIR/$FILENAME"
-  else
-    # Windows systems
-    OUTPUT_PATH=$(cygpath -w "$DOWNLOAD_DIR/$FILENAME")
-  fi
-
-  curl -L -o "$OUTPUT_PATH" "$ASSET_URL"
+  curl -L -o "$DOWNLOAD_DIR/$FILENAME" "$ASSET_URL"
 done
 
 echo "Download completed. Files saved to $DOWNLOAD_DIR."
-
-
