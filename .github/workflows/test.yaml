@@ -22,7 +22,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --pattern "*.zip" --dir "./downloaded_release"
+        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --pattern "*.zip" --dir "D:\\"
 
     - name: List Downloaded Files
       run: |
