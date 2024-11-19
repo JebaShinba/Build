@@ -1,63 +1,30 @@
-name: Build, Test, and Push Docker Image
+name: Download Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to download"
+        required: true
+        default: "v2024.11.18-093216"
 
 jobs:
-  build:
+  download:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code from the repository
-      - name: Check out code
-        uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      # Step 2: Log in to GitHub Container Registry
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install GitHub CLI
+      run: |
+        sudo apt update
+        sudo apt install gh -y
 
-      # Step 3: Check Docker version
-      - name: Check Docker version
-        run: docker --version
+    - name: Authenticate GitHub CLI
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      # Build Docker image
-      - name: Build Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/jebashinba/my-image:latest
-
-      # Step 5: Run the container with the built image and execute tests
-      - name: Run Docker container and execute tests
-        run: |
-          # Run Docker container in detached mode
-          docker run -d --name my-container-name ghcr.io/jebashinba/my-image:latest
-
-          # Wait a few seconds for the container to start (optional, depending on your app)
-          sleep 5
-
-          # Run Selenium tests using docker exec or a testing framework
-          docker exec -t my-container-name python -m unittest discover -s tests/  # Running Python tests inside the container
-
-          # Optionally, wait for tests to finish or log the output
-          docker logs my-container-name  # This shows logs to check test results
-
-          # Shut down the container after the tests are done (ensures proper cleanup)
-          docker stop my-container-name && docker rm -f my-container-name  # Stop and remove the container
-
-
-
-  
-
-
-
-
-
-  
+    - name: Download Release
+      run: |
+        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --dir "D:\\"
