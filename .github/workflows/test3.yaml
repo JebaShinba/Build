@@ -1,0 +1,42 @@
+name: Download Latest Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write  # Allow both reading and writing contents (e.g., creating releases, uploading assets)
+  actions: write   # Allow actions to be executed and managed
+  issues: read     # Optional: Allow access to issues (if needed for additional features)
+
+jobs:
+  download:
+    runs-on: windows-latest  # Running on Windows
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get Latest Release Information
+        run: |
+          $repo = "JebaShinba/Build"  # Replace with your repository
+          $token = "${{ secrets.GITHUB_TOKEN }}"  # Using GitHub token for authentication
+          $headers = @{
+            Authorization = "token $token"
+            Accept = "application/vnd.github.v3+json"
+          }
+
+          # Fetch the latest release data
+          $url = "https://api.github.com/repos/$repo/releases/latest"
+          $response = Invoke-RestMethod -Uri $url -Headers $headers
+
+          # Extracting the latest release details
+          $latestReleaseTag = $response.tag_name
+          $downloadUrl = ($response.assets | Where-Object { $_.name -eq "filename.zip" }).browser_download_url
+
+          Write-Output "Latest release tag: $latestReleaseTag"
+          Write-Output "Download URL: $downloadUrl"
+          
+          # Download the asset
+          $downloadPath = "C:\\Users\\jebas\\Downloads\\$($response.assets[0].name)"  # Specify the path where the file will be saved
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
+          Write-Output "Downloaded the latest release to: $downloadPath"
