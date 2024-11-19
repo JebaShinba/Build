@@ -1,0 +1,20 @@
+name: Download Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  download-release:
+    runs-on: ubuntu-latest  # Use macos-latest for macOS or windows-latest for Windows
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run shell script
+      run: |
+        chmod +x ./test.sh
+        bash ./test.sh
