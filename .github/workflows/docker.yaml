@@ -92,7 +92,7 @@ jobs:
       - name: Download Release Asset Using PowerShell
         run: |
           # Define variables
-          $versionTag = "v2024.11.12-043105"
+          $versionTag = "v2024.11.19-052402"
           $repo = "JebaShinba/Build"
           $downloadPath = "C:\\Users\\jebas\\Build\\downloaded_filename.zip"  # Set the path where the file will be saved
           $downloadDir = [System.IO.Path]::GetDirectoryName($downloadPath)  # Extract the directory path
