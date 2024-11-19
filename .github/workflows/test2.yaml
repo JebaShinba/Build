@@ -1,11 +1,16 @@
 name: Download Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Tag to download (leave empty for latest release)"
-        required: false
+    push:
+      branches:
+        - main
+    workflow_dispatch:
+      inputs:
+        tag:
+          description: "Tag to download (leave empty for latest release)"
+          required: true
+          default: "v2024.11.18-093216"
+
 
 jobs:
   download-release:
