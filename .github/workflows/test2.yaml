@@ -1,0 +1,41 @@
+name: Download Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to download (leave empty for latest release)"
+        required: false
+
+jobs:
+  download-release:
+    runs-on: self-hosted  # Ensure you have a self-hosted runner on your system
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Determine Release Tag
+        id: determine_tag
+        run: |
+          if [ "${{ github.event.inputs.tag }}" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          else
+            latest_tag=$(gh release list --repo JebaShinba/Build --limit 1 --json tagName --jq '.[0].tagName')
+            echo "tag=$latest_tag" >> $GITHUB_ENV
+          fi
+
+      - name: Download Release
+        run: |
+          gh release download ${{ env.tag }} \
+            --repo JebaShinba/Build \
+            --dir "D:/Releases"

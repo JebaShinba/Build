@@ -70,24 +70,30 @@ jobs:
       - name: List files in the current directory
         run: ls -l
 
-  
+  download:
+    runs-on: ubuntu-latest
+    needs: release  # Ensure this job runs only after the release job is finished
+    steps:
       - name: Download Artifact
         uses: actions/download-artifact@v3
         with:
           name: my-artifact
-          path: ./downloaded_files  
+          path: ./downloaded_files  # Specify the local directory to save the file
 
       - name: List files in the downloaded directory
         run: ls -l ./downloaded_files
 
- 
+  download_release:
+    runs-on: windows-latest  # This job runs on Windows
 
-   
+    
+
+    steps:
       - name: Download Release Asset Using PowerShell
         run: |
           # Define variables
-          $versionTag = "v2024.11.18-080829"  # Update this tag with the correct version you want to download
-          $repo = "JebaShinba/Build"  # Replace with your repo
+          $versionTag = "v2024.11.12-043105"
+          $repo = "JebaShinba/Build"
           $downloadPath = "C:\\Users\\jebas\\Build\\downloaded_filename.zip"  # Set the path where the file will be saved
           $downloadDir = [System.IO.Path]::GetDirectoryName($downloadPath)  # Extract the directory path
 
@@ -97,27 +103,17 @@ jobs:
           }
 
           # Fetch the release data for the specified tag
-          try {
-              $response = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$versionTag" -UseBasicParsing
-              
-              # Check if the release exists
-              if ($response) {
-                  Write-Output "Release found: $($response.name)"
-                  # Extract the download URL for the asset named 'filename.zip'
-                  $downloadUrl = ($response.assets | Where-Object { $_.name -eq "filename.zip" }).browser_download_url
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$versionTag" -UseBasicParsing
 
-                  if ($downloadUrl) {
-                      # Download the asset
-                      Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
-                      Write-Output "Downloaded file saved as $downloadPath."
-                  } else {
-                      Write-Error "No asset named 'filename.zip' was found in the release."
-                  }
-              } else {
-                  Write-Error "Release not found for tag: $versionTag"
-              }
-          } catch {
-              Write-Error "Error fetching release data: $_"
+          # Extract the download URL for the asset named 'filename.zip'
+          $downloadUrl = ($response.assets | Where-Object { $_.name -eq "filename.zip" }).browser_download_url
+
+          # Check if the URL was found, then download the asset
+          if ($downloadUrl) {
+              Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
+              Write-Output "Downloaded file saved as $downloadPath."
+          } else {
+              Write-Output "No asset named 'filename.zip' was found in the release."
           }
 
       - name: Upload downloaded file as artifact
