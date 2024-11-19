@@ -1,9 +1,6 @@
 name: Download Release
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       tag:
@@ -13,31 +10,20 @@ on:
 
 jobs:
   download:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Install GitHub CLI
       run: |
-        Invoke-WebRequest -Uri https://github.com/cli/cli/releases/latest/download/gh_2.39.0_windows_amd64.msi -OutFile gh-cli.msi
-        Start-Process msiexec.exe -Wait -ArgumentList '/i gh-cli.msi /quiet /norestart'
-        Remove-Item gh-cli.msi
-
-    - name: Authenticate GitHub CLI
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+        sudo apt update
+        sudo apt install gh -y
 
     - name: Download Release Assets
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        mkdir "C:\Users\jebas"
-        gh release download ${{ github.event.inputs.tag }} \
-          --repo JebaShinba/Build \
-          --pattern "*.zip" \
-          --dir "C:\Users\jebas"
+        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --pattern "*.zip" --dir "D:\\"
 
     - name: List Downloaded Files
       run: |
-        dir "C:\Users\jebas"
+        ls -lah D:\\
