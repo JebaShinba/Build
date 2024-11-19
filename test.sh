@@ -12,7 +12,7 @@ if [[ "$(uname)" == "Linux" || "$(uname)" == "Darwin" ]]; then
   DOWNLOAD_DIR="$HOME/Build"
 else
   # Windows (Git Bash, etc.)
-  DOWNLOAD_DIR="C:/Users/jebas"
+  DOWNLOAD_DIR="C:/Users/jebas/Build"
 fi
 
 # Ensure the download directory exists
