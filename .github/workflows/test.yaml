@@ -18,7 +18,9 @@ jobs:
     steps:
     - name: Install GitHub CLI
       run: |
-        winget install --id GitHub.cli
+        Invoke-WebRequest -Uri https://github.com/cli/cli/releases/latest/download/gh_2.39.0_windows_amd64.msi -OutFile gh-cli.msi
+        Start-Process msiexec.exe -Wait -ArgumentList '/i gh-cli.msi /quiet /norestart'
+        Remove-Item gh-cli.msi
 
     - name: Authenticate GitHub CLI
       env:
@@ -30,16 +32,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Ensure the directory exists
-        mkdir "C:\Users\jebas\releases"
-        
-        # Download assets to the specified directory
+        mkdir "C:\Users\jebas"
         gh release download ${{ github.event.inputs.tag }} \
           --repo JebaShinba/Build \
           --pattern "*.zip" \
-          --dir "C:\Users\jebas\releases"
+          --dir "C:\Users\jebas"
 
     - name: List Downloaded Files
       run: |
-        dir "C:\Users\jebas\releases"
-
+        dir "C:\Users\jebas"
