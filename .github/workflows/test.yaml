@@ -1,9 +1,6 @@
 name: Download Release
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       tag:
@@ -24,11 +21,11 @@ jobs:
         sudo apt update
         sudo apt install gh -y
 
-    - name: Download Release
+    - name: Download Release Assets
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --dir "./downloaded_release"
+        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --pattern "*.zip" --dir "./downloaded_release"
 
     - name: List Downloaded Files
       run: |
