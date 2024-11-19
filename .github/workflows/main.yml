@@ -1,12 +1,15 @@
 name: Download Release3
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       tag:
         description: "Tag to download"
         required: true
-        default: "v2024.11.18-093216"
+        default: "v2024.11.19-060533"
 
 jobs:
   download:
