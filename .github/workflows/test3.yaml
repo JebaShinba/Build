@@ -2,6 +2,10 @@ name: Download Latest Release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to download"
+        required: true
 
 permissions:
   contents: write  # Allow both reading and writing contents (e.g., creating releases, uploading assets)
