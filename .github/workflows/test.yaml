@@ -26,4 +26,4 @@ jobs:
 
     - name: List Downloaded Files
       run: |
-        ls -lah ./downloaded_release
+        ls -lah D:\\
