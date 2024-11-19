@@ -1,6 +1,9 @@
 name: Download Release
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       tag:
@@ -10,20 +13,33 @@ on:
 
 jobs:
   download:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: Install GitHub CLI
       run: |
-        sudo apt update
-        sudo apt install gh -y
+        winget install --id GitHub.cli
+
+    - name: Authenticate GitHub CLI
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
     - name: Download Release Assets
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release download ${{ github.event.inputs.tag }} --repo JebaShinba/Build --pattern "*.zip" --dir "D:\\"
+        # Ensure the directory exists
+        mkdir "C:\Users\jebas\releases"
+        
+        # Download assets to the specified directory
+        gh release download ${{ github.event.inputs.tag }} \
+          --repo JebaShinba/Build \
+          --pattern "*.zip" \
+          --dir "C:\Users\jebas\releases"
 
     - name: List Downloaded Files
       run: |
-        ls -lah D:\\
+        dir "C:\Users\jebas\releases"
+
