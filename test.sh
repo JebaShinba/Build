@@ -15,7 +15,7 @@ else
   DOWNLOAD_DIR="C:/Users/jebas/Build"
 fi
 
-# Ensure the download directory exists
+# Ensure the download directory
 mkdir -p "$DOWNLOAD_DIR"
 
 # Fetch the release information from GitHub
