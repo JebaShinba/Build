@@ -10,10 +10,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set PowerShell Execution 
-        run: |
-          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File
-
-      
       - name: Run OS Detection Script
-        run: ./demo.sh
+        run: |
+          # Ensure that we call PowerShell from the correct path
+          $powershellPath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+          if (Test-Path $powershellPath) {
+            & $powershellPath -File ./demo.ps1
+          } else {
+            Write-Error "PowerShell not found at the expected path"
+          }
