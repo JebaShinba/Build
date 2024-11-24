@@ -7,14 +7,14 @@ import time
 
 # Set up Chrome options
 chrome_options = Options()
-chrome_options.add_argument("--headless")  # Run in headless mode
+# chrome_options.add_argument("--headless")  # Run in headless mode
 chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
 chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 chrome_options.add_argument("--disable-gpu")  # Applicable to Windows environments
 chrome_options.add_argument("--window-size=1280x1024")  # Set a specific window size
 
 # Initialize the Chrome WebDriver with these options
-driver = webdriver.Chrome(options=chrome_options)
+driver = webdriver.Chrome("C:\\Users\\jebas\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe")
 
 # Function to open a page
 def open_page(url):
