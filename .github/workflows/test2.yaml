@@ -14,7 +14,7 @@ on:
 
 jobs:
   download-release:
-    runs-on: self-hosted  # Ensure you have a self-hosted runner on your system
+    runs-on: ubuntu-latest   # Ensure you have a self-hosted runner on your system
 
     steps:
       - name: Checkout Repository

@@ -10,6 +10,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Set PowerShell Execution 
+        run: |
+          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File
+
       - name: Set PowerShell Execution Policy for Current Session
         run: |
           Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
