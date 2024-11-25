@@ -8,7 +8,7 @@ on:
 
 jobs:
   download-release:
-    runs-on: ubuntu-latest  # Use macos-latest for macOS or windows-latest for Windows
+    runs-on: ubuntu-latest  
 
     steps:
     - name: Checkout code
