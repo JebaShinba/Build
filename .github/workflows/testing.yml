@@ -3,17 +3,26 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  
+  workflow_dispatch:
+
 jobs:
   detect-os-windows:
     runs-on: [self-hosted, windows] 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set PowerShell Execution 
-        run: |
-          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File
 
+      - name: Set PowerShell Execution Policy
+        run: |
+          # If required, modify PowerShell execution policy for script execution
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+      - name: Run PowerShell Script
+        run: |
+          # Make sure to replace the path below with the actual location of your PowerShell script
+          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File "C:\path\to\your\script.ps1"
       
       - name: Run OS Detection Script
-        run: ./demo.sh
+        run: |
+          # If you're still using the bash script, ensure you have WSL enabled on the runner
+          ./demo.sh
