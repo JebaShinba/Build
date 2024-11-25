@@ -1,25 +1,17 @@
-name: Detect OS on 
+name: Detect OS on Windows Self-Hosted Runner
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
-
+  workflow_dispatch:  # Allows manual triggering
 jobs:
   detect-os-windows:
-    runs-on: [self-hosted, windows] 
+    runs-on: [self-hosted, windows]  # Ensure the runner is Windows-based
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      
-
-      - name: Run PowerShell Script
+      - name: Set PowerShell Execution Policy for Current Session
         run: |
-          # Make sure to replace the path below with the actual location of your PowerShell script
-          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File "C:\Users\jebas\Build\demo.sh"
-      
+          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
       - name: Run OS Detection Script
-        run: |
-          # If you're still using the bash script, ensure you have WSL enabled on the runner
-          ./demo.sh
+        run: ./demo.sh
