@@ -10,7 +10,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Run OS Detection Script
+      - name: Set PowerShell Execution 
         run: |
-          # Run the shell script using Git Bash
-          "C:\Program Files\Git\bin\bash.exe" ./demo.sh
+          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File
+
+      
+      - name: Run OS Detection Script
+        run: ./demo.sh
