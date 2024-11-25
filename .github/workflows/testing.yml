@@ -1,4 +1,4 @@
-name: Detect OS on Windows Self-Hosted Runner
+name: Detect OS on 
 on:
   push:
     branches:
@@ -12,15 +12,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set PowerShell Execution Policy
-        run: |
-          # If required, modify PowerShell execution policy for script execution
-          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+      
 
       - name: Run PowerShell Script
         run: |
           # Make sure to replace the path below with the actual location of your PowerShell script
-          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File "C:\path\to\your\script.ps1"
+          C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File "C:\Users\jebas\Build\demo.sh"
       
       - name: Run OS Detection Script
         run: |
