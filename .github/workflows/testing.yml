@@ -6,7 +6,7 @@ on:
   workflow_dispatch:  # Allows manual triggering
 jobs:
   detect-os-windows:
-    runs-on: [self-hosted, windows]  # Ensure the runner is Windows-based
+    runs-on: [self-hosted, windows] 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
