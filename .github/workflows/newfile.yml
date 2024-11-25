@@ -1,0 +1,57 @@
+name: Download GitHub Release Asset
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  download-release:
+    runs-on: [self-hosted, windows]  # Specify Windows self-hosted runner
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PowerShell
+        uses: actions/setup-powershell@v2
+
+      - name: Run script to download release
+        run: |
+          # Windows-based path
+          $OUTPUT_DIR = "C:\Users\jebas\Build"
+          
+          # Variables
+          $GITHUB_REPO = "JebaShinba/Build"  # Replace with your GitHub repo
+          $ASSET_NAME = "filename.zip"       # Replace with the release asset name
+          
+          # Create output directory if it doesn't exist
+          if (-not (Test-Path -Path $OUTPUT_DIR)) {
+              New-Item -Path $OUTPUT_DIR -ItemType Directory
+          }
+          
+          # Fetch the latest release tag
+          Write-Host "Fetching the latest release tag for the repository $GITHUB_REPO..."
+          $LATEST_TAG = (Invoke-RestMethod -Uri "https://api.github.com/repos/$GITHUB_REPO/releases/latest").tag_name
+          if (-not $LATEST_TAG) {
+              Write-Host "Error: Unable to fetch the latest release tag."
+              exit 1
+          }
+          Write-Host "Latest release tag: $LATEST_TAG"
+          
+          # Get the download URL for the specified asset
+          Write-Host "Fetching download URL for asset: $ASSET_NAME..."
+          $RELEASE = Invoke-RestMethod -Uri "https://api.github.com/repos/$GITHUB_REPO/releases/tags/$LATEST_TAG"
+          $DOWNLOAD_URL = ($RELEASE.assets | Where-Object { $_.name -eq $ASSET_NAME }).browser_download_url
+          
+          if (-not $DOWNLOAD_URL) {
+              Write-Host "Error: Release asset '$ASSET_NAME' not found in the latest release."
+              exit 1
+          }
+          
+          # Download the release asset
+          Write-Host "Downloading $ASSET_NAME to $OUTPUT_DIR..."
+          Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile "$OUTPUT_DIR\$ASSET_NAME"
+          
+          Write-Host "Download complete! File saved at $OUTPUT_DIR\$ASSET_NAME"
