@@ -28,7 +28,7 @@ if [ -z "$LATEST_TAG" ]; then
 fi
 echo "Latest release tag: $LATEST_TAG"
 
-# Get the download URL for the specified asset
+
 echo "Fetching download URL for asset: $ASSET_NAME..."
 DOWNLOAD_URL=$(curl -s https://api.github.com/repos/$GITHUB_REPO/releases/tags/$LATEST_TAG \
   | grep -oP '(?<="browser_download_url": ")[^"]*(?=.*'"$ASSET_NAME"')')
