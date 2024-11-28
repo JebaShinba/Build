@@ -47,5 +47,5 @@ jobs:
       # Step 7: Deploy the application
       - name: Deploy application
         run: |
-          chmod +x ./deployment/deploy.sh
-          ./deployment
+          chmod +x ./deploy.sh
+          bash ./deploy.sh
