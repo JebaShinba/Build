@@ -9,36 +9,41 @@ on:
       tag:
         description: "Release tag to download"
         required: true
-        default: "v2024.11.28-030854"  # Update this to your latest tag
+        default: "latest"  # Default tag, can be updated to your desired version
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Install dependencies
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
 
+      # Step 3: Debug URL and Tag
       - name: Debug URL and Tag
         run: |
           echo "Using tag: ${{ github.event.inputs.tag }}"
           echo "Constructed URL: https://github.com/JebaShinba/Build/releases/download/${{ github.event.inputs.tag }}/filename.zip"
 
+      # Step 4: Download the release asset
       - name: Download release asset
         run: |
           TAG=${{ github.event.inputs.tag }}
           wget -O filename.zip "https://github.com/JebaShinba/Build/releases/download/${TAG}/filename.zip"
 
+      # Step 5: Extract the release
       - name: Extract release
         run: |
-          unzip filename.zip -d 
+          unzip filename.zip -d ./deployment
 
+      # Step 6: Deploy the application
       - name: Deploy application
         run: |
-          chmod +x ./deploy.sh
-          ./deploy.sh
-
+          chmod +x ./deployment/deploy.sh
+          ./deployment/deploy.sh
