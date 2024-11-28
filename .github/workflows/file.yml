@@ -1,15 +1,10 @@
-name: Download and Deploy Release
+name: Download and Deploy Latest Release
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      tag:
-        description: "Release tag to download"
-        required: true
-        default: "latest"  # Default tag, can be updated to your desired version
 
 jobs:
   deploy:
@@ -23,27 +18,34 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget unzip
+          sudo apt-get install -y wget unzip jq
 
-      # Step 3: Debug URL and Tag
+      # Step 3: Fetch the latest release tag
+      - name: Get the latest release tag
+        id: get_latest_release
+        run: |
+          LATEST_TAG=$(curl -s https://api.github.com/repos/JebaShinba/Build/releases/latest | jq -r '.tag_name')
+          echo "Latest release tag: $LATEST_TAG"
+          echo "tag=$LATEST_TAG" >> $GITHUB_ENV
+
+      # Step 4: Debug URL and Tag
       - name: Debug URL and Tag
         run: |
-          echo "Using tag: ${{ github.event.inputs.tag }}"
-          echo "Constructed URL: https://github.com/JebaShinba/Build/releases/download/${{ github.event.inputs.tag }}/filename.zip"
+          echo "Using tag: ${{ env.tag }}"
+          echo "Constructed URL: https://github.com/JebaShinba/Build/releases/download/${{ env.tag }}/filename.zip"
 
-      # Step 4: Download the release asset
+      # Step 5: Download the release asset
       - name: Download release asset
         run: |
-          TAG=${{ github.event.inputs.tag }}
-          wget -O filename.zip "https://github.com/JebaShinba/Build/releases/download/${TAG}/filename.zip"
+          wget -O filename.zip "https://github.com/JebaShinba/Build/releases/download/${{ env.tag }}/filename.zip"
 
-      # Step 5: Extract the release
+      # Step 6: Extract the release
       - name: Extract release
         run: |
           unzip filename.zip -d ./deployment
 
-      # Step 6: Deploy the application
+      # Step 7: Deploy the application
       - name: Deploy application
         run: |
           chmod +x ./deployment/deploy.sh
-          ./deployment/deploy.sh
+          ./deployment
