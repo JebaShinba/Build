@@ -9,36 +9,35 @@ on:
       tag:
         description: "Release tag to download"
         required: true
+        default: "v1.0.0"  # Default for testing
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the Repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Install Dependencies
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
 
-      # Step 3: Download the Release Asset
+      - name: Debug URL
+        run: |
+          echo "Tag: ${{ github.event.inputs.tag }}"
+          echo "URL: https://github.com/JebaShinba/Build/releases/download/${{ github.event.inputs.tag }}/filename.zip"
+
       - name: Download release asset
         run: |
           TAG=${{ github.event.inputs.tag }}
           wget -O filename.zip "https://github.com/JebaShinba/Build/releases/download/${TAG}/filename.zip"
 
-      # Step 4: Extract the Release Asset
       - name: Extract release
         run: |
           unzip filename.zip -d 
 
-      # Step 5: Run Deployment Script
       - name: Deploy application
         run: |
           chmod +x ./deploy.sh
           ./deploy.sh
-
-
