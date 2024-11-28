@@ -9,7 +9,7 @@ on:
       tag:
         description: "Release tag to download"
         required: true
-        default: "v1.0.0"  # Default for testing
+        default: "v2024.11.28-030854"  # Update this to your latest tag
 
 jobs:
   deploy:
@@ -23,10 +23,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wget unzip
 
-      - name: Debug URL
+      - name: Debug URL and Tag
         run: |
-          echo "Tag: ${{ github.event.inputs.tag }}"
-          echo "URL: https://github.com/JebaShinba/Build/releases/download/${{ github.event.inputs.tag }}/filename.zip"
+          echo "Using tag: ${{ github.event.inputs.tag }}"
+          echo "Constructed URL: https://github.com/JebaShinba/Build/releases/download/${{ github.event.inputs.tag }}/filename.zip"
 
       - name: Download release asset
         run: |
@@ -41,3 +41,4 @@ jobs:
         run: |
           chmod +x ./deploy.sh
           ./deploy.sh
+
